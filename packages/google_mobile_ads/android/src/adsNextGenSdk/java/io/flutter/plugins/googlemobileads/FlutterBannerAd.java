@@ -112,6 +112,15 @@ class FlutterBannerAd extends FlutterAd implements FlutterAdLoadedListener {
             Activity activity = manager.getActivity();
             if (activity == null) {
               Log.e(TAG, "Tried to load banner ad before plugin is attached to an activity.");
+              // Answer the load, or Dart waits for this banner forever.
+              ad.destroy();
+              manager.onAdFailedToLoad(
+                  adId,
+                  new FlutterAd.FlutterLoadAdError(
+                      LoadAdError.ErrorCode.INTERNAL_ERROR.getValue(),
+                      "com.google.android.libraries.ads.mobile.sdk",
+                      "Banner ad loaded before the plugin was attached to an activity.",
+                      null));
               return;
             }
             bannerAd = ad;
@@ -124,6 +133,7 @@ class FlutterBannerAd extends FlutterAd implements FlutterAdLoadedListener {
           @Override
           public void onAdFailedToLoad(@NonNull LoadAdError adError) {
             bannerAd = null;
+            manager.onAdFailedToLoad(adId, new FlutterAd.FlutterLoadAdError(adError));
           }
         });
   }
